@@ -29,19 +29,9 @@ public class ChangePasswordModel : PageModel
         _logger = logger;
     }
 
-    /// <summary>
-    ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-    ///     directly from your code. This API may change or be removed in future releases.
-    /// </summary>
-    [BindProperty]
-    public InputModel Input { get; set; }
+    [BindProperty] public InputModel Input { get; set; }
 
-    /// <summary>
-    ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-    ///     directly from your code. This API may change or be removed in future releases.
-    /// </summary>
-    [TempData]
-    public string StatusMessage { get; set; }
+    [TempData] public string StatusMessage { get; set; }
 
     public async Task<IActionResult> OnGetAsync()
     {
@@ -73,11 +63,11 @@ public class ChangePasswordModel : PageModel
             return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
         }
 
-        IdentityResult changePasswordResult =
+        IdentityResult result =
             await _userManager.ChangePasswordAsync(user, Input.OldPassword, Input.NewPassword);
-        if (!changePasswordResult.Succeeded)
+        if (!result.Succeeded)
         {
-            foreach (IdentityError error in changePasswordResult.Errors)
+            foreach (IdentityError error in result.Errors)
             {
                 ModelState.AddModelError(string.Empty, error.Description);
             }
@@ -86,31 +76,20 @@ public class ChangePasswordModel : PageModel
         }
 
         await _signInManager.RefreshSignInAsync(user);
+
         _logger.LogInformation("User changed their password successfully.");
         StatusMessage = "Your password has been changed.";
 
         return RedirectToPage();
     }
 
-    /// <summary>
-    ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-    ///     directly from your code. This API may change or be removed in future releases.
-    /// </summary>
     public class InputModel
     {
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [Required]
         [DataType(DataType.Password)]
         [Display(Name = "Current password")]
         public string OldPassword { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [Required]
         [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.",
             MinimumLength = 6)]
@@ -118,10 +97,6 @@ public class ChangePasswordModel : PageModel
         [Display(Name = "New password")]
         public string NewPassword { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [DataType(DataType.Password)]
         [Display(Name = "Confirm new password")]
         [Compare("NewPassword", ErrorMessage = "The new password and confirmation password do not match.")]

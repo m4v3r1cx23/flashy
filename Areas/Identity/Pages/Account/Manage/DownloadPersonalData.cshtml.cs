@@ -42,7 +42,6 @@ public class DownloadPersonalDataModel : PageModel
 
         _logger.LogInformation("User with ID '{UserId}' asked for their personal data.", _userManager.GetUserId(User));
 
-        // Only include personal data for download
         Dictionary<string, string> personalData = new Dictionary<string, string>();
         IEnumerable<PropertyInfo> personalDataProps = typeof(User).GetProperties().Where(
             prop => Attribute.IsDefined(prop, typeof(PersonalDataAttribute)));

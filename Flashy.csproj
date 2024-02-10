@@ -29,4 +29,11 @@
         <PackageReference Include="System.Linq.Async" Version="6.0.1"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Areas\Admin\Pages\Decks\" />
+      <Folder Include="Areas\Admin\Pages\FlashCards\" />
+      <Folder Include="Areas\Admin\Pages\Roles\" />
+      <Folder Include="Areas\Admin\Pages\Users\" />
+    </ItemGroup>
+
 </Project>
