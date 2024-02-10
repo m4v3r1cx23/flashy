@@ -1,520 +1,526 @@
 using System.Security.Claims;
+
 using Flashy.Data.Context;
 using Flashy.Shared.Models;
 using Flashy.Shared.Models.Identity;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Flashy.Data.Repositories.Identity;
 
 public class UserStore : IUserStore<User>,
-                         IProtectedUserStore<User>,
-                         IUserAuthenticationTokenStore<User>,
-                         IUserAuthenticatorKeyStore<User>,
-                         IUserClaimStore<User>,
-                         IUserEmailStore<User>,
-                         IUserLockoutStore<User>,
-                         IUserTwoFactorStore<User>,
-                         IUserTwoFactorRecoveryCodeStore<User>,
-                         IUserSecurityStampStore<User>,
-                         IUserLoginStore<User>,
-                         IUserPasswordStore<User>,
-                         IUserPhoneNumberStore<User>
+    IProtectedUserStore<User>,
+    IUserAuthenticationTokenStore<User>,
+    IUserAuthenticatorKeyStore<User>,
+    IUserClaimStore<User>,
+    IUserEmailStore<User>,
+    IUserLockoutStore<User>,
+    IUserTwoFactorStore<User>,
+    IUserTwoFactorRecoveryCodeStore<User>,
+    IUserSecurityStampStore<User>,
+    IUserLoginStore<User>,
+    IUserPasswordStore<User>,
+    IUserPhoneNumberStore<User>
 {
-  protected ApplicationDbContext _context;
+    protected ApplicationDbContext _context;
 
-  public UserStore(ApplicationDbContext context)
-  {
-    _context = context;
-  }
-
-  public async Task<IdentityResult> CreateAsync(User user, CancellationToken cancellationToken)
-  {
-    try
+    public UserStore(ApplicationDbContext context)
     {
-      user.FirstName = "First Name";
-      user.LastName = "Last Name";
-
-      _context.Add(user);
-
-      var result = await _context.SaveChangesAsync(cancellationToken);
-
-      return result > 0
-        ? IdentityResult.Success
-        : IdentityResult.Failed(new IdentityError { Description = "Failed to create user." });
+        _context = context;
     }
-    catch (Exception e)
+
+    public Task<string?> GetTokenAsync(User user, string loginProvider, string name,
+        CancellationToken cancellationToken)
     {
-      return IdentityResult.Failed(new IdentityError { Description = e.Message });
+        try
+        {
+            return _context.UserLogins.Where(u =>
+                    u.UserId == user.Id && u.LoginProvider == loginProvider && u.ProviderKey == name)
+                .Select(u => u.ProviderDisplayName)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+        catch
+        {
+            return Task.FromResult<string?>(null);
+        }
     }
-  }
 
-  public async Task<IdentityResult> DeleteAsync(User user, CancellationToken cancellationToken)
-  {
-    try
+    public async Task RemoveTokenAsync(User user, string loginProvider, string name,
+        CancellationToken cancellationToken)
     {
-      _context.Remove(user);
+        try
+        {
+            UserLogin? userLogin = await _context.UserLogins.Where(u =>
+                    u.UserId == user.Id && u.LoginProvider == loginProvider && u.ProviderKey == name)
+                .FirstOrDefaultAsync(cancellationToken);
 
-      var result = await _context.SaveChangesAsync(cancellationToken);
+            if (userLogin == null)
+            {
+                return;
+            }
 
-      return result > 0
-        ? IdentityResult.Success
-        : IdentityResult.Failed(new IdentityError { Description = "Failed to delete user." });
+            _context.UserLogins.Remove(userLogin);
+
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch
+        {
+        }
     }
-    catch (Exception e)
+
+    public Task SetTokenAsync(User user, string loginProvider, string name, string? value,
+        CancellationToken cancellationToken)
     {
-      return IdentityResult.Failed(new IdentityError { Description = e.Message });
+        try
+        {
+            UserLogin userLogin = new UserLogin
+            {
+                UserId = user.Id,
+                LoginProvider = loginProvider,
+                ProviderKey = name,
+                ProviderDisplayName = value ?? ""
+            };
+
+            _context.UserLogins.Add(userLogin);
+
+            return _context.SaveChangesAsync(cancellationToken);
+        }
+        catch
+        {
+            return Task.CompletedTask;
+        }
     }
-  }
 
-  public void Dispose()
-  {
-    _context.Dispose();
-  }
-
-  public Task<User?> FindByIdAsync(string userId, CancellationToken cancellationToken)
-  {
-    try
+    public Task<string?> GetAuthenticatorKeyAsync(User user, CancellationToken cancellationToken)
     {
-      var id = Guid.Parse(userId);
-
-      return _context.Users.FirstOrDefaultAsync(x => x.Id == id,
-                                                cancellationToken: cancellationToken);
+        throw new NotImplementedException();
     }
-    catch (Exception)
+
+    public Task SetAuthenticatorKeyAsync(User user, string key, CancellationToken cancellationToken)
     {
-      return Task.FromResult<User?>(null);
+        throw new NotImplementedException();
     }
-  }
 
-  public Task<User?> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
-  {
-    try
+    public Task AddClaimsAsync(User user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
     {
-      return _context.Users.FirstOrDefaultAsync(x => x.NormalizedUserName == normalizedUserName,
-                                                cancellationToken: cancellationToken);
+        try
+        {
+            IEnumerable<UserClaim> c = claims.Select(x =>
+                new UserClaim { UserId = user.Id, ClaimType = x.Type, ClaimValue = x.Value });
+
+            _context.AddRangeAsync(c, cancellationToken);
+
+            return Task.CompletedTask;
+        }
+        catch (Exception e)
+        {
+            return Task.FromException(e);
+        }
     }
-    catch (Exception)
+
+    public Task<IList<Claim>> GetClaimsAsync(User user, CancellationToken cancellationToken)
     {
-      return Task.FromResult<User?>(null);
+        try
+        {
+            List<Claim> claims = _context.UserClaims.Select(x => new Claim(x.ClaimType!, x.ClaimValue!))
+                .ToList();
+
+            return Task.FromResult<IList<Claim>>(claims);
+        }
+        catch (Exception e)
+        {
+            return Task.FromException<IList<Claim>>(e);
+        }
     }
-  }
 
-  public Task<string?> GetNormalizedUserNameAsync(User user, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.NormalizedUserName);
-  }
-
-  public Task<string> GetUserIdAsync(User user, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.Id.ToString());
-  }
-
-  public Task<string?> GetUserNameAsync(User user, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.UserName);
-  }
-
-  public Task SetNormalizedUserNameAsync(User user, string? normalizedName, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.NormalizedUserName = normalizedName);
-  }
-
-  public Task SetUserNameAsync(User user, string? userName, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.UserName = userName);
-  }
-
-  public async Task<IdentityResult> UpdateAsync(User user, CancellationToken cancellationToken)
-  {
-    try
+    public Task<IList<User>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)
     {
-      _context.Update(user);
+        try
+        {
+            List<User> users = _context.UserClaims.Where(x => x.ClaimType == claim.Type &&
+                                                              x.ClaimValue == claim.Value)
+                .Select(x => x.User)
+                .ToList();
 
-      var result = await _context.SaveChangesAsync(cancellationToken);
-
-      return result > 0
-        ? IdentityResult.Success
-        : IdentityResult.Failed(new IdentityError { Description = "Failed to update user." });
+            return Task.FromResult<IList<User>>(users);
+        }
+        catch (Exception e)
+        {
+            return Task.FromException<IList<User>>(e);
+        }
     }
-    catch (Exception e)
+
+    public Task RemoveClaimsAsync(User user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
     {
-      return IdentityResult.Failed(new IdentityError { Description = e.Message });
-    }
-  }
+        try
+        {
+            user.Claims.RemoveAll(x => claims.Any(c => c.Type == x.ClaimType && c.Value == x.ClaimValue));
 
-  public Task<string?> GetTokenAsync(User user, string loginProvider, string name, CancellationToken cancellationToken)
-  {
-    try
+            return Task.CompletedTask;
+        }
+        catch (Exception e)
+        {
+            return Task.FromException(e);
+        }
+    }
+
+    public Task ReplaceClaimAsync(User user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
     {
-      return _context.UserLogins.Where(u => u.UserId == user.Id && u.LoginProvider == loginProvider && u.ProviderKey == name)
-                              .Select(u => u.ProviderDisplayName)
-                              .FirstOrDefaultAsync(cancellationToken);
+        try
+        {
+            user.Claims.RemoveAll(x => x.ClaimType == claim.Type && x.ClaimValue == claim.Value);
+
+            user.Claims.Add(new UserClaim { UserId = user.Id, ClaimType = newClaim.Type, ClaimValue = newClaim.Value });
+
+            return Task.CompletedTask;
+        }
+        catch (Exception e)
+        {
+            return Task.FromException(e);
+        }
     }
-    catch
+
+
+    public Task<User?> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
     {
-      return Task.FromResult<string?>(null);
+        try
+        {
+            return Task.FromResult(_context.Users.FirstOrDefault(u => u.NormalizedEmail == normalizedEmail));
+        }
+        catch
+        {
+            return Task.FromResult<User?>(null);
+        }
     }
-  }
 
-  public async Task RemoveTokenAsync(User user, string loginProvider, string name, CancellationToken cancellationToken)
-  {
-    try
+    public Task<string?> GetEmailAsync(User user, CancellationToken cancellationToken)
     {
-      var userLogin = await _context.UserLogins.Where(u => u.UserId == user.Id && u.LoginProvider == loginProvider && u.ProviderKey == name)
-                                               .FirstOrDefaultAsync(cancellationToken);
-
-      if (userLogin == null)
-      {
-        return;
-      }
-
-      _context.UserLogins.Remove(userLogin);
-
-      await _context.SaveChangesAsync(cancellationToken);
+        return Task.FromResult(user.Email);
     }
-    catch
+
+    public Task<bool> GetEmailConfirmedAsync(User user, CancellationToken cancellationToken)
     {
-      return;
+        return Task.FromResult(user.EmailConfirmed);
     }
-  }
 
-  public Task SetTokenAsync(User user, string loginProvider, string name, string? value, CancellationToken cancellationToken)
-  {
-    try
+    public Task<string?> GetNormalizedEmailAsync(User user, CancellationToken cancellationToken)
     {
-      var userLogin = new UserLogin
-      {
-        UserId = user.Id,
-        LoginProvider = loginProvider,
-        ProviderKey = name,
-        ProviderDisplayName = value ?? ""
-      };
-
-      _context.UserLogins.Add(userLogin);
-
-      return _context.SaveChangesAsync(cancellationToken);
+        return Task.FromResult(user.NormalizedEmail);
     }
-    catch
+
+    public Task SetEmailAsync(User user, string? email, CancellationToken cancellationToken)
     {
-      return Task.CompletedTask;
+        return Task.FromResult(user.Email = email);
     }
-  }
 
-  public Task<string?> GetAuthenticatorKeyAsync(User user, CancellationToken cancellationToken)
-  {
-    throw new NotImplementedException();
-  }
-
-  public Task SetAuthenticatorKeyAsync(User user, string key, CancellationToken cancellationToken)
-  {
-    throw new NotImplementedException();
-  }
-
-  public Task AddClaimsAsync(User user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
-  {
-    try
+    public Task SetEmailConfirmedAsync(User user, bool confirmed, CancellationToken cancellationToken)
     {
-      var c = claims.Select(x => new UserClaim { UserId = user.Id, ClaimType = x.Type, ClaimValue = x.Value });
-
-      _context.AddRangeAsync(c, cancellationToken);
-
-      return Task.CompletedTask;
+        return Task.FromResult(user.EmailConfirmed = confirmed);
     }
-    catch (Exception e)
+
+    public Task SetNormalizedEmailAsync(User user, string? normalizedEmail, CancellationToken cancellationToken)
     {
-      return Task.FromException(e);
+        return Task.FromResult(user.NormalizedEmail = normalizedEmail);
     }
-  }
 
-  public Task<IList<Claim>> GetClaimsAsync(User user, CancellationToken cancellationToken)
-  {
-    try
+    public Task<int> GetAccessFailedCountAsync(User user, CancellationToken cancellationToken)
     {
-      var claims = _context.UserClaims.Select(x => new Claim(x.ClaimType!, x.ClaimValue!))
-                                      .ToList();
-
-      return Task.FromResult<IList<Claim>>(claims);
+        return Task.FromResult(user.AccessFailedCount);
     }
-    catch (Exception e)
+
+    public Task<bool> GetLockoutEnabledAsync(User user, CancellationToken cancellationToken)
     {
-      return Task.FromException<IList<Claim>>(e);
+        return Task.FromResult(user.LockoutEnabled);
     }
-  }
 
-  public Task<IList<User>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)
-  {
-    try
+    public Task<DateTimeOffset?> GetLockoutEndDateAsync(User user, CancellationToken cancellationToken)
     {
-      var users = _context.UserClaims.Where(x => x.ClaimType == claim.Type &&
-                                                 x.ClaimValue == claim.Value)
-                                     .Select(x => x.User)
-                                     .ToList();
-
-      return Task.FromResult<IList<User>>(users);
+        return Task.FromResult(user.LockoutEnd);
     }
-    catch (Exception e)
+
+    public Task<int> IncrementAccessFailedCountAsync(User user, CancellationToken cancellationToken)
     {
-      return Task.FromException<IList<User>>(e);
+        return Task.FromResult(user.AccessFailedCount++);
     }
-  }
 
-  public Task RemoveClaimsAsync(User user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
-  {
-    try
+    public Task ResetAccessFailedCountAsync(User user, CancellationToken cancellationToken)
     {
-      user.Claims.RemoveAll(x => claims.Any(c => c.Type == x.ClaimType && c.Value == x.ClaimValue));
-
-      return Task.CompletedTask;
+        return Task.FromResult(user.AccessFailedCount = 0);
     }
-    catch (Exception e)
+
+    public Task SetLockoutEnabledAsync(User user, bool enabled, CancellationToken cancellationToken)
     {
-      return Task.FromException(e);
-
+        return Task.FromResult(user.LockoutEnabled = enabled);
     }
-  }
 
-  public Task ReplaceClaimAsync(User user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
-  {
-    try
+    public Task SetLockoutEndDateAsync(User user, DateTimeOffset? lockoutEnd, CancellationToken cancellationToken)
     {
-      user.Claims.RemoveAll(x => x.ClaimType == claim.Type && x.ClaimValue == claim.Value);
-
-      user.Claims.Add(new UserClaim { UserId = user.Id, ClaimType = newClaim.Type, ClaimValue = newClaim.Value });
-
-      return Task.CompletedTask;
+        return Task.FromResult(user.LockoutEnd = lockoutEnd);
     }
-    catch (Exception e)
+
+    public Task AddLoginAsync(User user, UserLoginInfo login, CancellationToken cancellationToken)
     {
-      return Task.FromException(e);
+        try
+        {
+            UserLogin userLogin = new UserLogin
+            {
+                UserId = user.Id,
+                LoginProvider = login.LoginProvider,
+                ProviderKey = login.ProviderKey,
+                ProviderDisplayName = login.ProviderDisplayName
+            };
+
+            user.Logins.Add(userLogin);
+
+            return Task.CompletedTask;
+        }
+        catch (Exception e)
+        {
+            return Task.FromException(e);
+        }
     }
-  }
 
-
-  public Task<User?> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
-  {
-    try
+    public async Task<User?> FindByLoginAsync(string loginProvider, string providerKey,
+        CancellationToken cancellationToken)
     {
-      return Task.FromResult(_context.Users.FirstOrDefault(u => u.NormalizedEmail == normalizedEmail));
+        try
+        {
+            User? user = await _context.Users.FirstOrDefaultAsync(x => x.Logins
+                .Any(x => x.LoginProvider == loginProvider &&
+                          x.ProviderKey == providerKey));
+
+            return user;
+        }
+        catch
+        {
+            return null;
+        }
     }
-    catch
+
+    public Task<IList<UserLoginInfo>> GetLoginsAsync(User user, CancellationToken cancellationToken)
     {
-      return Task.FromResult<User?>(null);
+        List<UserLoginInfo> logins = user.Logins
+            .Select(x => new UserLoginInfo(x.LoginProvider, x.ProviderKey, x.ProviderDisplayName))
+            .ToList();
+
+        return Task.FromResult<IList<UserLoginInfo>>(logins);
     }
-  }
 
-  public Task<string?> GetEmailAsync(User user, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.Email);
-  }
-
-  public Task<bool> GetEmailConfirmedAsync(User user, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.EmailConfirmed);
-  }
-
-  public Task<string?> GetNormalizedEmailAsync(User user, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.NormalizedEmail);
-  }
-
-  public Task SetEmailAsync(User user, string? email, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.Email = email);
-  }
-
-  public Task SetEmailConfirmedAsync(User user, bool confirmed, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.EmailConfirmed = confirmed);
-  }
-
-  public Task SetNormalizedEmailAsync(User user, string? normalizedEmail, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.NormalizedEmail = normalizedEmail);
-  }
-
-  public Task<int> GetAccessFailedCountAsync(User user, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.AccessFailedCount);
-  }
-
-  public Task<bool> GetLockoutEnabledAsync(User user, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.LockoutEnabled);
-  }
-
-  public Task<DateTimeOffset?> GetLockoutEndDateAsync(User user, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.LockoutEnd);
-  }
-
-  public Task<int> IncrementAccessFailedCountAsync(User user, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.AccessFailedCount++);
-  }
-
-  public Task ResetAccessFailedCountAsync(User user, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.AccessFailedCount = 0);
-  }
-
-  public Task SetLockoutEnabledAsync(User user, bool enabled, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.LockoutEnabled = enabled);
-  }
-
-  public Task SetLockoutEndDateAsync(User user, DateTimeOffset? lockoutEnd, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.LockoutEnd = lockoutEnd);
-  }
-
-  public Task<bool> GetTwoFactorEnabledAsync(User user, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.TwoFactorEnabled);
-  }
-
-  public Task SetTwoFactorEnabledAsync(User user, bool enabled, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.TwoFactorEnabled = enabled);
-  }
-
-  public Task<int> CountCodesAsync(User user, CancellationToken cancellationToken)
-  {
-    throw new NotImplementedException();
-  }
-
-  public Task<bool> RedeemCodeAsync(User user, string code, CancellationToken cancellationToken)
-  {
-    throw new NotImplementedException();
-  }
-
-  public Task ReplaceCodesAsync(User user, IEnumerable<string> recoveryCodes, CancellationToken cancellationToken)
-  {
-    throw new NotImplementedException();
-  }
-
-  public Task<string?> GetSecurityStampAsync(User user, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.SecurityStamp);
-  }
-
-  public Task SetSecurityStampAsync(User user, string stamp, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.SecurityStamp = stamp);
-  }
-
-  public Task AddLoginAsync(User user, UserLoginInfo login, CancellationToken cancellationToken)
-  {
-    try
+    public Task RemoveLoginAsync(User user, string loginProvider, string providerKey,
+        CancellationToken cancellationToken)
     {
-      var userLogin = new UserLogin
-      {
-        UserId = user.Id,
-        LoginProvider = login.LoginProvider,
-        ProviderKey = login.ProviderKey,
-        ProviderDisplayName = login.ProviderDisplayName
-      };
-
-      user.Logins.Add(userLogin);
-
-      return Task.CompletedTask;
+        return Task.FromResult(user.Logins.RemoveAll(x =>
+            x.LoginProvider == loginProvider && x.ProviderKey == providerKey));
     }
-    catch (Exception e)
+
+    public Task<string?> GetPasswordHashAsync(User user, CancellationToken cancellationToken)
     {
-      return Task.FromException(e);
+        return Task.FromResult(user.PasswordHash);
     }
-  }
 
-  public async Task<User?> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
-  {
-    try
+    public Task<bool> HasPasswordAsync(User user, CancellationToken cancellationToken)
     {
-      var user = await _context.Users.FirstOrDefaultAsync(x => x.Logins
-                                                                .Any(x => x.LoginProvider == loginProvider &&
-                                                                          x.ProviderKey == providerKey));
-
-      return user;
+        return Task.FromResult(user.PasswordHash != null);
     }
-    catch
+
+    public Task SetPasswordHashAsync(User user, string? passwordHash, CancellationToken cancellationToken)
     {
-      return null;
+        return Task.FromResult(user.PasswordHash = passwordHash);
     }
-  }
 
-  public Task<IList<UserLoginInfo>> GetLoginsAsync(User user, CancellationToken cancellationToken)
-  {
-    var logins = user.Logins.Select(x => new UserLoginInfo(x.LoginProvider, x.ProviderKey, x.ProviderDisplayName))
-                            .ToList();
-
-    return Task.FromResult<IList<UserLoginInfo>>(logins);
-  }
-
-  public Task RemoveLoginAsync(User user, string loginProvider, string providerKey, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.Logins.RemoveAll(x => x.LoginProvider == loginProvider && x.ProviderKey == providerKey));
-  }
-
-  Task<User?> IUserStore<User>.FindByIdAsync(string userId, CancellationToken cancellationToken)
-  {
-    try
+    public Task<string?> GetPhoneNumberAsync(User user, CancellationToken cancellationToken)
     {
-      var id = Guid.Parse(userId);
-
-      return _context.Users.FirstOrDefaultAsync(x => x.Id == id,
-                                                cancellationToken: cancellationToken);
+        return Task.FromResult(user.PhoneNumber);
     }
-    catch (Exception)
+
+    public Task<bool> GetPhoneNumberConfirmedAsync(User user, CancellationToken cancellationToken)
     {
-      return Task.FromResult<User?>(null);
-
+        return Task.FromResult(user.PhoneNumberConfirmed);
     }
-  }
 
-  Task<User?> IUserStore<User>.FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
-  {
-    try
+    public Task SetPhoneNumberAsync(User user, string? phoneNumber, CancellationToken cancellationToken)
     {
-      return _context.Users.FirstOrDefaultAsync(x => x.NormalizedUserName == normalizedUserName,
-                                                cancellationToken: cancellationToken);
+        return Task.FromResult(user.PhoneNumber = phoneNumber);
     }
-    catch (Exception)
+
+    public Task SetPhoneNumberConfirmedAsync(User user, bool confirmed, CancellationToken cancellationToken)
     {
-      return Task.FromResult<User?>(null);
+        return Task.FromResult(user.PhoneNumberConfirmed = confirmed);
     }
-  }
 
-  public Task<string?> GetPasswordHashAsync(User user, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.PasswordHash);
-  }
+    public Task<string?> GetSecurityStampAsync(User user, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(user.SecurityStamp);
+    }
 
-  public Task<bool> HasPasswordAsync(User user, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.PasswordHash != null);
-  }
+    public Task SetSecurityStampAsync(User user, string stamp, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(user.SecurityStamp = stamp);
+    }
 
-  public Task SetPasswordHashAsync(User user, string? passwordHash, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.PasswordHash = passwordHash);
-  }
+    public async Task<IdentityResult> CreateAsync(User user, CancellationToken cancellationToken)
+    {
+        try
+        {
+            _context.Add(user);
 
-  public Task<string?> GetPhoneNumberAsync(User user, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.PhoneNumber);
-  }
+            int result = await _context.SaveChangesAsync(cancellationToken);
 
-  public Task<bool> GetPhoneNumberConfirmedAsync(User user, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.PhoneNumberConfirmed);
-  }
+            return result > 0
+                ? IdentityResult.Success
+                : IdentityResult.Failed(new IdentityError { Description = "Failed to create user." });
+        }
+        catch (Exception e)
+        {
+            return IdentityResult.Failed(new IdentityError { Description = e.Message });
+        }
+    }
 
-  public Task SetPhoneNumberAsync(User user, string? phoneNumber, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.PhoneNumber = phoneNumber);
-  }
+    public async Task<IdentityResult> DeleteAsync(User user, CancellationToken cancellationToken)
+    {
+        try
+        {
+            _context.Remove(user);
 
-  public Task SetPhoneNumberConfirmedAsync(User user, bool confirmed, CancellationToken cancellationToken)
-  {
-    return Task.FromResult(user.PhoneNumberConfirmed = confirmed);
-  }
+            int result = await _context.SaveChangesAsync(cancellationToken);
+
+            return result > 0
+                ? IdentityResult.Success
+                : IdentityResult.Failed(new IdentityError { Description = "Failed to delete user." });
+        }
+        catch (Exception e)
+        {
+            return IdentityResult.Failed(new IdentityError { Description = e.Message });
+        }
+    }
+
+    public void Dispose()
+    {
+        _context.Dispose();
+    }
+
+    public Task<string?> GetNormalizedUserNameAsync(User user, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(user.NormalizedUserName);
+    }
+
+    public Task<string> GetUserIdAsync(User user, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(user.Id.ToString());
+    }
+
+    public Task<string?> GetUserNameAsync(User user, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(user.UserName);
+    }
+
+    public Task SetNormalizedUserNameAsync(User user, string? normalizedName, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(user.NormalizedUserName = normalizedName);
+    }
+
+    public Task SetUserNameAsync(User user, string? userName, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(user.UserName = userName);
+    }
+
+    public async Task<IdentityResult> UpdateAsync(User user, CancellationToken cancellationToken)
+    {
+        try
+        {
+            _context.Update(user);
+
+            int result = await _context.SaveChangesAsync(cancellationToken);
+
+            return result > 0
+                ? IdentityResult.Success
+                : IdentityResult.Failed(new IdentityError { Description = "Failed to update user." });
+        }
+        catch (Exception e)
+        {
+            return IdentityResult.Failed(new IdentityError { Description = e.Message });
+        }
+    }
+
+    Task<User?> IUserStore<User>.FindByIdAsync(string userId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            Guid id = Guid.Parse(userId);
+
+            return _context.Users.FirstOrDefaultAsync(x => x.Id == id,
+                cancellationToken);
+        }
+        catch (Exception)
+        {
+            return Task.FromResult<User?>(null);
+        }
+    }
+
+    Task<User?> IUserStore<User>.FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return _context.Users.FirstOrDefaultAsync(x => x.NormalizedUserName == normalizedUserName,
+                cancellationToken);
+        }
+        catch (Exception)
+        {
+            return Task.FromResult<User?>(null);
+        }
+    }
+
+    public Task<int> CountCodesAsync(User user, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> RedeemCodeAsync(User user, string code, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task ReplaceCodesAsync(User user, IEnumerable<string> recoveryCodes, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> GetTwoFactorEnabledAsync(User user, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(user.TwoFactorEnabled);
+    }
+
+    public Task SetTwoFactorEnabledAsync(User user, bool enabled, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(user.TwoFactorEnabled = enabled);
+    }
+
+    public Task<User?> FindByIdAsync(string userId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            Guid id = Guid.Parse(userId);
+
+            return _context.Users.FirstOrDefaultAsync(x => x.Id == id,
+                cancellationToken);
+        }
+        catch (Exception)
+        {
+            return Task.FromResult<User?>(null);
+        }
+    }
+
+    public Task<User?> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return _context.Users.FirstOrDefaultAsync(x => x.NormalizedUserName == normalizedUserName,
+                cancellationToken);
+        }
+        catch (Exception)
+        {
+            return Task.FromResult<User?>(null);
+        }
+    }
 }

@@ -1,21 +1,19 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Docs.Samples;
 
-namespace Flashy.Pages
+namespace Flashy.Pages;
+
+public class IndexModel : PageModel
 {
-    public class IndexModel : PageModel
+    private readonly ILogger<IndexModel> _logger;
+
+    public IndexModel(ILogger<IndexModel> logger)
     {
-        private readonly ILogger<IndexModel> _logger;
+        _logger = logger;
+    }
 
-        public IndexModel(ILogger<IndexModel> logger)
-        {
-            _logger = logger;
-        }
-
-        public void OnGet()
-        {
-            ViewData["routeInfo"] =  PageContext.ToCtxStringP();
-        }
+    public void OnGet()
+    {
+        ViewData["routeInfo"] = PageContext.ToCtxStringP();
     }
 }

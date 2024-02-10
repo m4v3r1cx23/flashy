@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Docs.Samples;
 
@@ -14,7 +13,7 @@ public class PrivacyModel : PageModel
     }
 
     public void OnGet()
-    {        
-        ViewData["routeInfo"] =  PageContext.ToCtxStringP();
+    {
+        ViewData["routeInfo"] = PageContext.ToCtxStringP();
     }
 }
