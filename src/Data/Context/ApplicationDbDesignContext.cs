@@ -7,10 +7,10 @@ public class ApplicationDbDesignContext : IDesignTimeDbContextFactory<Applicatio
 {
     public ApplicationDbContext CreateDbContext(string[] args)
     {
-        if (args.Length != 1)
-        {
-            throw new ArgumentException("Expected connection string as argument");
-        }
+        // if (args.Length != 1)
+        // {
+        //     throw new ArgumentException("Expected connection string as argument");
+        // }
 
         DbContextOptionsBuilder<ApplicationDbContext> optionsBuilder =
             new DbContextOptionsBuilder<ApplicationDbContext>();
@@ -20,7 +20,7 @@ public class ApplicationDbDesignContext : IDesignTimeDbContextFactory<Applicatio
         optionsBuilder.EnableDetailedErrors();
         optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
 
-        optionsBuilder.UseSqlServer(args[0]);
+        optionsBuilder.UseSqlServer("Data Source=tcp:flashy-app-server.database.windows.net,1433;Initial Catalog=SQLAzure;User Id=flashy-app-server-admin@flashy-app-server.database.windows.net;Password=701C73CHISD4AQ31$");
 
         return new ApplicationDbContext(optionsBuilder.Options);
     }

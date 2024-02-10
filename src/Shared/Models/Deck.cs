@@ -9,6 +9,6 @@ public class Deck
     public string NormalizedName { get; set; } = null!;
     public string? Description { get; set; }
     public virtual List<FlashCard> FlashCards { get; } = [];
-    public virtual User CreatedBy { get; private set; } = null!;
-    public DateTime CreatedAt { get; }
+    public virtual User CreatedBy { get; set; } = null!;
+    public DateTime CreatedAt { get; set; }
 }

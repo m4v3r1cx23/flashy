@@ -4,5 +4,5 @@ namespace Flashy.Shared.Models.Identity;
 
 public class RoleClaim : IdentityRoleClaim<Guid>
 {
-    public virtual Role Role { get; private set; } = null!;
+    public virtual Role Role { get; set; } = null!;
 }

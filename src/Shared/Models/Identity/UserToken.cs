@@ -4,5 +4,5 @@ namespace Flashy.Shared.Models.Identity;
 
 public class UserToken : IdentityUserToken<Guid>
 {
-    public virtual User User { get; private set; } = null!;
+    public virtual User User { get; set; } = null!;
 }

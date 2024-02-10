@@ -9,7 +9,7 @@ public class FlashCard
     public string NormalizedFront { get; set; } = null!;
     public string Back { get; set; } = null!;
     public string NormalizedBack { get; set; } = null!;
-    public string? Hint { get; }
-    public virtual User CreatedBy { get; private set; } = null!;
-    public DateTime CreatedAt { get; }
+    public string? Hint { get; set; }
+    public virtual User CreatedBy { get; set; } = null!;
+    public DateTime CreatedAt { get; set; }
 }

@@ -12,17 +12,17 @@
     <nav class="navbar navbar-expand-md navbar-toggleable-md navbar-dark bg-body-tertiary box-shadow">
         <div class="container-fluid">
             <a class="navbar-brand" asp-area="" asp-page="/Index">Flashy</a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navBar" 
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navBar"
                     aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
+
             <div class="navbar-collapse collapse justify-content-between" id="navBar">
                 <div class="navbar-nav">
-                    <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")" asp-area="" asp-page="/Index">Home</a>
-                    <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Privacy" ? "active" : "")" asp-area="" asp-page="/Privacy">Privacy</a>
-                    <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "About" ? "active" : "")" asp-area="" asp-page="/About">About</a>
+                    <a class="nav-link" asp-area="" asp-page="/Index">Home</a>
+                    <a class="nav-link" asp-area="" asp-page="/Privacy">Privacy</a>
+                    <a class="nav-link" asp-area="Admin" asp-page="/Index">Admin</a>
                 </div>
                 <partial name="_LoginPartial"/>
             </div>

@@ -1,0 +1,59 @@
+@page
+@model Flashy.Areas.Admin.Pages.FlashCards.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "_Layout";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-page="Create">Create New</a>
+</p>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.FlashCard[0].Front)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FlashCard[0].Back)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FlashCard[0].Hint)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FlashCard[0].CreatedAt)
+            </th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model.FlashCard)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Front)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Back)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Hint)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CreatedAt)
+                </td>
+                <td>
+                    <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

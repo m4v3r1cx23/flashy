@@ -1,0 +1,88 @@
+@page
+@model Flashy.Areas.Admin.Pages.Users.EditModel
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "_Layout";
+}
+
+<h1>Edit</h1>
+
+<h4>User</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="InputModel.FirstName" class="control-label"></label>
+                <input asp-for="InputModel.FirstName" class="form-control" />
+                <span asp-validation-for="InputModel.FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="InputModel.LastName" class="control-label"></label>
+                <input asp-for="InputModel.LastName" class="form-control" />
+                <span asp-validation-for="InputModel.LastName" class="text-danger"></span>
+            </div>
+            <input type="hidden" asp-for="InputModel.Id" />
+            <div class="form-group">
+                <label asp-for="InputModel.UserName" class="control-label"></label>
+                <input asp-for="InputModel.UserName" class="form-control" />
+                <span asp-validation-for="InputModel.UserName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="InputModel.Email" class="control-label"></label>
+                <input asp-for="InputModel.Email" class="form-control" />
+                <span asp-validation-for="InputModel.Email" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="InputModel.EmailConfirmed" /> @Html.DisplayNameFor(model => model.InputModel.EmailConfirmed)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="InputModel.Password" class="control-label"></label>
+                <input asp-for="InputModel.Password" class="form-control" />
+                <span asp-validation-for="InputModel.Password" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="InputModel.PhoneNumber" class="control-label"></label>
+                <input asp-for="InputModel.PhoneNumber" class="form-control" />
+                <span asp-validation-for="InputModel.PhoneNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="InputModel.PhoneNumberConfirmed" /> @Html.DisplayNameFor(model => model.InputModel.PhoneNumberConfirmed)
+                </label>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="InputModel.TwoFactorEnabled" /> @Html.DisplayNameFor(model => model.InputModel.TwoFactorEnabled)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="InputModel.LockoutEnd" class="control-label"></label>
+                <input asp-for="InputModel.LockoutEnd" class="form-control" />
+                <span asp-validation-for="InputModel.LockoutEnd" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="InputModel.LockoutEnabled" /> @Html.DisplayNameFor(model => model.InputModel.LockoutEnabled)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="InputModel.AccessFailedCount" class="control-label"></label>
+                <input asp-for="InputModel.AccessFailedCount" class="form-control" />
+                <span asp-validation-for="InputModel.AccessFailedCount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Index">Back to List</a>
+</div>
+

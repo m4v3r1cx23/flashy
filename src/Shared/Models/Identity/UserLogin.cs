@@ -4,6 +4,6 @@ namespace Flashy.Shared.Models.Identity;
 
 public class UserLogin : IdentityUserLogin<Guid>
 {
-    public virtual User User { get; private set; } = null!;
-    public string NormalizedProviderDisplayName { get; private set; } = null!;
+    public virtual User User { get; set; } = null!;
+    public string NormalizedProviderDisplayName { get; set; } = null!;
 }
