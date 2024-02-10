@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Docs.Samples;
 
 namespace Flashy.Pages;
 
@@ -13,7 +14,7 @@ public class PrivacyModel : PageModel
     }
 
     public void OnGet()
-    {
+    {        
+        ViewData["routeInfo"] =  PageContext.ToCtxStringP();
     }
 }
-
