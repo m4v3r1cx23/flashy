@@ -24,11 +24,9 @@ public class GenerateRecoveryCodesModel : PageModel
         _logger = logger;
     }
 
-    [TempData]
-    public string[] RecoveryCodes { get; set; }
+    [TempData] public string[] RecoveryCodes { get; set; }
 
-    [TempData]
-    public string StatusMessage { get; set; }
+    [TempData] public string StatusMessage { get; set; }
 
     public async Task<IActionResult> OnGetAsync()
     {

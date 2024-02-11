@@ -74,7 +74,7 @@ public class UserStore : IUserStore<User>,
     {
         try
         {
-            UserLogin userLogin = new UserLogin
+            UserLogin userLogin = new()
             {
                 UserId = user.Id,
                 LoginProvider = loginProvider,
@@ -263,7 +263,7 @@ public class UserStore : IUserStore<User>,
     {
         try
         {
-            UserLogin userLogin = new UserLogin
+            UserLogin userLogin = new()
             {
                 UserId = user.Id,
                 LoginProvider = login.LoginProvider,

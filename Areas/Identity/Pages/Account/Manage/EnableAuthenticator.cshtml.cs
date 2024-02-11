@@ -37,14 +37,11 @@ public class EnableAuthenticatorModel : PageModel
 
     public string AuthenticatorUri { get; set; }
 
-    [TempData]
-    public string[] RecoveryCodes { get; set; }
+    [TempData] public string[] RecoveryCodes { get; set; }
 
-    [TempData]
-    public string StatusMessage { get; set; }
+    [TempData] public string StatusMessage { get; set; }
 
-    [BindProperty]
-    public InputModel Input { get; set; }
+    [BindProperty] public InputModel Input { get; set; }
 
     public async Task<IActionResult> OnGetAsync()
     {
@@ -120,7 +117,7 @@ public class EnableAuthenticatorModel : PageModel
 
     private string FormatKey(string unformattedKey)
     {
-        StringBuilder result = new StringBuilder();
+        StringBuilder result = new();
         int currentPosition = 0;
         while (currentPosition + 4 < unformattedKey.Length)
         {

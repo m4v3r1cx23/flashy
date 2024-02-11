@@ -31,8 +31,7 @@ public class LoginWithRecoveryCodeModel : PageModel
         _logger = logger;
     }
 
-    [BindProperty]
-    public InputModel Input { get; set; }
+    [BindProperty] public InputModel Input { get; set; }
 
     public string ReturnUrl { get; set; }
 

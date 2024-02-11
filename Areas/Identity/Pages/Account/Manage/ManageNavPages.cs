@@ -29,7 +29,7 @@ public static class ManageNavPages
     {
         return PageNavClass(viewContext, Index);
     }
-    
+
     public static string EmailNavClass(ViewContext viewContext)
     {
         return PageNavClass(viewContext, Email);

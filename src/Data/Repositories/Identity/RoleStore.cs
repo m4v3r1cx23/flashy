@@ -21,7 +21,7 @@ public class RoleStore : IRoleStore<Role>, IRoleClaimStore<Role>
     {
         try
         {
-            RoleClaim roleClaim = new RoleClaim { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value };
+            RoleClaim roleClaim = new() { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value };
 
             _context.RoleClaims.Add(roleClaim);
 

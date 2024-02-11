@@ -31,8 +31,7 @@ public class LoginWith2faModel : PageModel
         _logger = logger;
     }
 
-    [BindProperty]
-    public InputModel Input { get; set; }
+    [BindProperty] public InputModel Input { get; set; }
 
     public bool RememberMe { get; set; }
 

@@ -1,43 +1,37 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using Flashy.Data.Context;
 using Flashy.Shared.Models.Identity;
 
-namespace Flashy.Areas.Admin.Pages.Roles
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+
+namespace Flashy.Areas.Admin.Pages.Roles;
+
+public class DetailsModel : PageModel
 {
-    public class DetailsModel : PageModel
+    private readonly ApplicationDbContext _context;
+
+    public DetailsModel(ApplicationDbContext context)
     {
-        private readonly Flashy.Data.Context.ApplicationDbContext _context;
+        _context = context;
+    }
 
-        public DetailsModel(Flashy.Data.Context.ApplicationDbContext context)
+    public Role Role { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync(Guid? id)
+    {
+        if (id == null)
         {
-            _context = context;
+            return NotFound();
         }
 
-        public Role Role { get; set; } = default!;
-
-        public async Task<IActionResult> OnGetAsync(Guid? id)
+        Role? role = await _context.Roles.FirstOrDefaultAsync(m => m.Id == id);
+        if (role == null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var role = await _context.Roles.FirstOrDefaultAsync(m => m.Id == id);
-            if (role == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                Role = role;
-            }
-            return Page();
+            return NotFound();
         }
+
+        Role = role;
+        return Page();
     }
 }

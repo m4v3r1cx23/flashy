@@ -25,8 +25,7 @@ public class ConfirmEmailChangeModel : PageModel
         _signInManager = signInManager;
     }
 
-    [TempData]
-    public string StatusMessage { get; set; }
+    [TempData] public string StatusMessage { get; set; }
 
     public async Task<IActionResult> OnGetAsync(string userId, string email, string code)
     {

@@ -24,8 +24,7 @@ public class ResetPasswordModel : PageModel
         _userManager = userManager;
     }
 
-    [BindProperty]
-    public InputModel Input { get; set; }
+    [BindProperty] public InputModel Input { get; set; }
 
     public IActionResult OnGet(string code = null)
     {
@@ -68,9 +67,7 @@ public class ResetPasswordModel : PageModel
 
     public class InputModel
     {
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
+        [Required] [EmailAddress] public string Email { get; set; }
 
         [Required]
         [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.",
@@ -83,7 +80,6 @@ public class ResetPasswordModel : PageModel
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
 
-        [Required]
-        public string Code { get; set; }
+        [Required] public string Code { get; set; }
     }
 }

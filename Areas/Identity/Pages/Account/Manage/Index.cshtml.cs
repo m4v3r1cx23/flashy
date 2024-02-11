@@ -28,11 +28,9 @@ public class IndexModel : PageModel
 
     public string Username { get; set; }
 
-    [TempData]
-    public string StatusMessage { get; set; }
+    [TempData] public string StatusMessage { get; set; }
 
-    [BindProperty]
-    public InputModel Input { get; set; }
+    [BindProperty] public InputModel Input { get; set; }
 
     private async Task LoadAsync(User user)
     {

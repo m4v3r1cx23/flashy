@@ -1,63 +1,56 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using Flashy.Data.Context;
 using Flashy.Shared.Models.Identity;
 
-namespace Flashy.Areas.Admin.Pages.Roles
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+
+namespace Flashy.Areas.Admin.Pages.Roles;
+
+public class DeleteModel : PageModel
 {
-    public class DeleteModel : PageModel
+    private readonly ApplicationDbContext _context;
+
+    public DeleteModel(ApplicationDbContext context)
     {
-        private readonly Flashy.Data.Context.ApplicationDbContext _context;
+        _context = context;
+    }
 
-        public DeleteModel(Flashy.Data.Context.ApplicationDbContext context)
+    [BindProperty] public Role Role { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync(Guid? id)
+    {
+        if (id == null)
         {
-            _context = context;
+            return NotFound();
         }
 
-        [BindProperty]
-        public Role Role { get; set; } = default!;
+        Role? role = await _context.Roles.FirstOrDefaultAsync(m => m.Id == id);
 
-        public async Task<IActionResult> OnGetAsync(Guid? id)
+        if (role == null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var role = await _context.Roles.FirstOrDefaultAsync(m => m.Id == id);
-
-            if (role == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                Role = role;
-            }
-            return Page();
+            return NotFound();
         }
 
-        public async Task<IActionResult> OnPostAsync(Guid? id)
+        Role = role;
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostAsync(Guid? id)
+    {
+        if (id == null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var role = await _context.Roles.FindAsync(id);
-            if (role != null)
-            {
-                Role = role;
-                _context.Roles.Remove(Role);
-                await _context.SaveChangesAsync();
-            }
-
-            return RedirectToPage("./Index");
+            return NotFound();
         }
+
+        Role? role = await _context.Roles.FindAsync(id);
+        if (role != null)
+        {
+            Role = role;
+            _context.Roles.Remove(Role);
+            await _context.SaveChangesAsync();
+        }
+
+        return RedirectToPage("./Index");
     }
 }

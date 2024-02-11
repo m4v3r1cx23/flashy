@@ -26,11 +26,9 @@ public class SetPasswordModel : PageModel
         _signInManager = signInManager;
     }
 
-    [BindProperty]
-    public InputModel Input { get; set; }
+    [BindProperty] public InputModel Input { get; set; }
 
-    [TempData]
-    public string StatusMessage { get; set; }
+    [TempData] public string StatusMessage { get; set; }
 
     public async Task<IActionResult> OnGetAsync()
     {

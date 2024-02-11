@@ -12,15 +12,15 @@ public class ApplicationDbDesignContext : IDesignTimeDbContextFactory<Applicatio
         //     throw new ArgumentException("Expected connection string as argument");
         // }
 
-        DbContextOptionsBuilder<ApplicationDbContext> optionsBuilder =
-            new DbContextOptionsBuilder<ApplicationDbContext>();
+        DbContextOptionsBuilder<ApplicationDbContext> optionsBuilder = new();
 
         // Logging
         optionsBuilder.EnableSensitiveDataLogging();
         optionsBuilder.EnableDetailedErrors();
         optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
 
-        optionsBuilder.UseSqlServer("Data Source=tcp:flashy-app-server.database.windows.net,1433;Initial Catalog=SQLAzure;User Id=flashy-app-server-admin@flashy-app-server.database.windows.net;Password=701C73CHISD4AQ31$");
+        optionsBuilder.UseSqlServer(
+            "Data Source=tcp:flashy-app-server.database.windows.net,1433;Initial Catalog=SQLAzure;User Id=flashy-app-server-admin@flashy-app-server.database.windows.net;Password=701C73CHISD4AQ31$");
 
         return new ApplicationDbContext(optionsBuilder.Options);
     }

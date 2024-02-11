@@ -42,7 +42,7 @@ public class DownloadPersonalDataModel : PageModel
 
         _logger.LogInformation("User with ID '{UserId}' asked for their personal data.", _userManager.GetUserId(User));
 
-        Dictionary<string, string> personalData = new Dictionary<string, string>();
+        Dictionary<string, string> personalData = new();
         IEnumerable<PropertyInfo> personalDataProps = typeof(User).GetProperties().Where(
             prop => Attribute.IsDefined(prop, typeof(PersonalDataAttribute)));
         foreach (PropertyInfo p in personalDataProps)
