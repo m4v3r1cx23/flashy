@@ -119,7 +119,9 @@ internal class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        builder.Services.AddRazorPages();
+        builder.Services.AddRazorPages(options => {
+            options.Conventions.AuthorizeAreaFolder("Admin", "/");
+        });
 
         WebApplication app = builder.Build();
 
