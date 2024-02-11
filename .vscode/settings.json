@@ -1,0 +1,5 @@
+{
+  "appService.preDeployTask": "publish-release",
+  "appService.deploySubpath": "bin/Release/net8.0/publish",
+  "appService.defaultWebAppToDeploy": "/subscriptions/4b9608b1-d182-452b-ac7a-d139c5c3faa2/resourceGroups/flashy/providers/Microsoft.Web/sites/flashy-app"
+}

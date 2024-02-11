@@ -1,10 +1,36 @@
-﻿@page
+﻿@page "{index:int?}"
 @model IndexModel
 @{
     ViewData["Title"] = "Home page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container-sm m-5 d-flex justify-content-center align-items-center shadow-lg p-3 bg-white">
+    <div class="d-grid gap-4 d-md-block">
+        <h1>@Html.DisplayFor(model => model.Learn.Card.Front)</h1>
+        <p>@Html.DisplayFor(model => model.Learn.Card.Hint)</p>
+        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#cardBack" aria-expanded="false" aria-controls="collapse">
+            Toggle Answer
+        </button>
+        <div class="collapse" id="cardBack">
+            <div class="card card-body">@Html.DisplayFor(model => model.Learn.Card.Back)</div>
+        </div>
+        <form method="post">
+            <button type="button" class="btn btn-success btn-lg">
+                <i class="bi bi-emoji-smile-fill"></i>
+            </button>
+        </form>
+        <form method="post">
+            <button type="button" class="btn btn-danger btn-lg">
+                <i class="bi bi-emoji-angry-fill"></i>
+            </button>
+        </form>
+        <form method="post" asp-page-handler="Previous">
+            <button class="btn btn-outline-secondary">Previous</button>
+            <input type="hidden" name="index" value="@Html.DisplayFor(model => model.Learn.Index)" />
+        </form>
+        <form method="post" asp-page-handler="Next">
+            <button class="btn btn-outline-primary">Next</button>
+            <input type="hidden" name="index" value="@Html.DisplayFor(model => model.Learn.Index)" />
+        </form>
+    </div>
 </div>

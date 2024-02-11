@@ -16,7 +16,7 @@ internal class Program
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-        builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
+        builder.Services.AddDbContext<ApplicationDbContext>(options =>
         {
             // Change FlashyConnection to DefaultConnection for local SQL Express development
             string connectionString = builder.Configuration.GetConnectionString("FlashyConnection") ??
