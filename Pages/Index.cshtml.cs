@@ -1,3 +1,5 @@
+using flashy.src.Shared.Services;
+
 using Flashy.Data.Context;
 using Flashy.Shared.Models;
 
@@ -12,13 +14,15 @@ public class IndexModel : PageModel
 {
     private readonly ILogger<IndexModel> _logger;
     private readonly ApplicationDbContext _context;
+    private readonly ExampleService _exampleService;
 
     [BindProperty] public Learn Learn { get; set; } = null!;
 
-    public IndexModel(ILogger<IndexModel> logger, ApplicationDbContext context)
+    public IndexModel(ILogger<IndexModel> logger, ApplicationDbContext context, ExampleService exampleService)
     {
         _logger = logger;
         _context = context;
+        _exampleService = exampleService;
     }
 
     public async Task<IActionResult> OnGet(int? index)
@@ -38,14 +42,15 @@ public class IndexModel : PageModel
             Card = cards[index.Value],
             Index = index.Value,
             IsFirst = index == 0,
-            IsLast = index + 1 >= cards.Count
+            IsLast = index + 1 >= cards.Count,
+            UserNames = await _exampleService.GetExample()
         };
         ViewData["routeInfo"] = PageContext.ToCtxStringP();
 
         return Page();
     }
 
-    public void OnPostPrevious(int index)
+    public async Task OnPostPrevious(int index)
     {
         var cards = _context.Flashcards.ToList();
 
@@ -62,11 +67,12 @@ public class IndexModel : PageModel
             Card = cards[index],
             Index = index,
             IsFirst = index == 0,
-            IsLast = index + 1 >= cards.Count
+            IsLast = index + 1 >= cards.Count,
+            UserNames = await _exampleService.GetExample()
         };
     }
 
-    public void OnPostNext(int index)
+    public async Task OnPostNext(int index)
     {
         var cards = _context.Flashcards.ToList();
 
@@ -83,7 +89,8 @@ public class IndexModel : PageModel
             Card = cards[index],
             Index = index,
             IsFirst = index == 0,
-            IsLast = index + 1 >= cards.Count
+            IsLast = index + 1 >= cards.Count,
+            UserNames = await _exampleService.GetExample()
         };
     }
 }
@@ -95,4 +102,5 @@ public class Learn
     public int Index { get; set; }
     public bool IsFirst { get; set; }
     public bool IsLast { get; set; }
+    public List<string> UserNames { get; set; } = [];
 }

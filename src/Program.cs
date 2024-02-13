@@ -1,3 +1,5 @@
+using flashy.src.Shared.Services;
+
 using Flashy.Data.Context;
 using Flashy.Data.Repositories.Identity;
 using Flashy.Shared.Models;
@@ -65,6 +67,8 @@ internal class Program
         builder.Services.AddScoped<IProtectedUserStore<User>, UserStore>();
         // builder.Services.AddScoped<IUserTwoFactorRecoveryCodeStore<User>, UserTwoFactorRecoveryCodeStore>();
         // builder.Services.AddScoped<IUserTwoFactorStore<User>, UserStore>();
+
+        builder.Services.AddScoped<ExampleService>();
 
         builder.Services.AddIdentity<User, Role>(options =>
             {
