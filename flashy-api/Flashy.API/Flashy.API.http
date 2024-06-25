@@ -1,0 +1,6 @@
+@Flashy.API_HostAddress = http://localhost:5080
+
+GET {{Flashy.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
