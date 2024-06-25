@@ -1,0 +1,97 @@
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Docker Compose reference guide at
+# https://docs.docker.com/go/compose-spec-reference/
+
+# Here the instructions define your application as a service called "app".
+# This service is built from the Dockerfile in the current directory.
+# You can add other services your application may depend on here, such as a
+# database or a cache. For examples, see the Awesome Compose repository:
+# https://github.com/docker/awesome-compose
+services:
+  identity-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: identity-db
+    restart: unless-stopped
+    environment:
+      SA_PASSWORD: "YourStrong@Passw0rd"
+      ACCEPT_EULA: "Y"
+      INIT_SQL_PATH: "/docker-entrypoint-initdb.d/identity-init.sql"
+    ports:
+      - "5250:1433"
+    volumes:
+      - ./database/init.sh:/usr/src/app/init.sh
+      - ./database/identity/identity-init.sql:/docker-entrypoint-initdb.d/identity-init.sql
+    networks:
+      - identity-network
+    entrypoint: ["/bin/bash", "/usr/src/app/init.sh"]
+
+  api-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: api-db
+    restart: unless-stopped
+    environment:
+      SA_PASSWORD: "YourStrong@Passw0rd"
+      ACCEPT_EULA: "Y"
+      INIT_SQL_PATH: "/docker-entrypoint-initdb.d/api-init.sql"
+    ports:
+      - "5150:1433"
+    volumes:
+      - ./database/init.sh:/usr/src/app/init.sh
+      - ./database/api/api-init.sql:/docker-entrypoint-initdb.d/api-init.sql
+    networks:
+      - api-network
+    entrypoint: ["/bin/bash", "/usr/src/app/init.sh"]
+
+  flashy-identity:
+    container_name: flashy-identity
+    restart: unless-stopped
+    build:
+      context: flashy-identity
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5200
+      ConnectionStrings__DefaultConnection: "Server=identity-db;Database=Identity;User Id=FlashyIdentity;Password=FlashyIdentity062024;"
+    ports:
+      - "5200:5200"
+    hostname: flashy-identity
+    networks:
+      - identity-network
+    depends_on:
+      - identity-db
+
+  flashy-api:
+    container_name: flashy-api
+    restart: unless-stopped
+    build:
+      context: flashy-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5100
+      ConnectionStrings__DefaultConnection: "Server=api-db;Database=API;User Id=FlashyAPI;Password=FlashyAPI062024;"
+    ports:
+      - "5100:5100"
+    hostname: flashy-api
+    networks:
+      - api-network
+      - identity-network
+    depends_on:
+      - api-db
+      - flashy-identity
+
+  web:
+    container_name: web
+    restart: unless-stopped
+    build:
+      context: flashy-web
+    ports:
+      - "80:80"
+    hostname: flashy
+    networks:
+      - identity-network
+      - api-network
+    depends_on:
+      - flashy-api
+
+networks:
+  identity-network:
+  api-network:
