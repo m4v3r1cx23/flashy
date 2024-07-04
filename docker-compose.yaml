@@ -50,7 +50,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:5200
-      ConnectionStrings__DefaultConnection: "Server=identity-db;Database=Identity;User Id=FlashyIdentity;Password=FlashyIdentity062024;"
+      ConnectionStrings__DefaultConnection: "Server=identity-db;Database=Identity;User Id=FlashyIdentity;Password=FlashyIdentity062024;TrustServerCertificate=True;"
     ports:
       - "5200:5200"
     hostname: flashy-identity
@@ -67,7 +67,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:5100
-      ConnectionStrings__DefaultConnection: "Server=api-db;Database=API;User Id=FlashyAPI;Password=FlashyAPI062024;"
+      ConnectionStrings__DefaultConnection: "Server=api-db;Database=FlashyAPI;User Id=FlashyAPI;Password=Fl@shy@PI#062024!;TrustServerCertificate=True;"
     ports:
       - "5100:5100"
     hostname: flashy-api
