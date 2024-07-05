@@ -1,3 +1,4 @@
+using Flashy.API.Domain.Models.FlashCards;
 using Microsoft.AspNetCore.Identity;
 
 public class User : IdentityUser<Guid>
@@ -9,4 +10,5 @@ public class User : IdentityUser<Guid>
   public virtual List<UserLogin> Logins { get; } = [];
   public virtual List<UserToken> Tokens { get; } = [];
   public virtual List<Role> Roles { get; } = [];
+  public virtual List<Trial> Trials { get; } = [];
 }
